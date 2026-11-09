@@ -1,0 +1,387 @@
+<!doctype html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Disegnatore – KDP Studio</title>
+<meta name="robots" content="noindex,nofollow">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;800&family=Atkinson+Hyperlegible:wght@400;700&display=swap">
+<style>
+/* Banco del disegnatore: colonna unica, schede in griglia, una barra d'azione in alto. */
+:root{
+  --paper:#FBFAF7; --sheet:#FFFFFF; --ink:#1B2433; --muted:#5B6577; --line:#E3E1DA;
+  --blue:#1F4E8C; --blue-soft:#E7EEF8; --orange:#E8791C; --orange-soft:#FDEEDF;
+  --ok:#2E7D4F; --ok-soft:#E3F2E8; --bad:#B3261E; --bad-soft:#FCE4E2;
+  --display:"Baloo 2","Arial Rounded MT Bold","Trebuchet MS",system-ui,sans-serif;
+  --body:"Atkinson Hyperlegible",system-ui,-apple-system,"Segoe UI",sans-serif;
+}
+@media (prefers-color-scheme: dark){:root{
+  --paper:#12161D; --sheet:#1A2029; --ink:#E8EBF0; --muted:#A3ADBD; --line:#2C3542;
+  --blue:#8DB4EC; --blue-soft:#1E2B3E; --orange:#F2A15E; --orange-soft:#3A2717;
+  --ok:#7CCB9A; --ok-soft:#18301F; --bad:#F2928B; --bad-soft:#3A1B19; color-scheme:dark}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--paper);color:var(--ink);font-family:var(--body);font-size:15px;line-height:1.5}
+main{max-width:980px;margin:0 auto;padding:20px max(16px,env(safe-area-inset-left,0px)) 60px;display:grid;gap:16px}
+h1,h2{font-family:var(--display);margin:0;line-height:1.15}
+h1{font-size:1.8rem;color:var(--blue)} h1 b{color:var(--orange)}
+h2{font-size:1.2rem}
+.card{background:var(--sheet);border:1px solid var(--line);border-radius:12px;padding:16px;display:grid;gap:12px}
+.lead{color:var(--muted);margin:0}
+label{display:grid;gap:4px;font-weight:700;font-size:.9rem}
+input,select{font:inherit;color:inherit;border:1px solid var(--line);border-radius:10px;background:var(--paper);padding:9px 10px;min-height:42px;width:100%}
+.row{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.grid2{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,260px),1fr));gap:12px}
+.btn{font:inherit;font-weight:700;border:1px solid var(--line);background:var(--sheet);color:var(--ink);border-radius:10px;padding:10px 16px;min-height:44px;cursor:pointer}
+.btn.primary{background:var(--blue);border-color:var(--blue);color:var(--sheet)}
+.btn.accent{background:var(--orange);border-color:var(--orange);color:#fff}
+.btn.small{padding:5px 10px;min-height:32px;font-size:.85rem}
+.btn:disabled{opacity:.5;cursor:not-allowed}
+.note{border-radius:10px;padding:10px 12px;font-size:.92rem}
+.note.bad{background:var(--bad-soft);color:var(--bad)} .note.ok{background:var(--ok-soft);color:var(--ok)} .note.info{background:var(--blue-soft);color:var(--blue)}
+.bar{height:10px;border-radius:99px;background:var(--line);overflow:hidden}.bar i{display:block;height:100%;width:0;background:var(--orange);transition:width .3s}
+.jobs{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px}
+.job{border:1px solid var(--line);border-radius:10px;background:var(--sheet);padding:8px;display:grid;gap:6px;min-width:0}
+.job .pic{aspect-ratio:3/4;border-radius:6px;background:var(--paper) center/contain no-repeat;border:1px dashed var(--line);display:grid;place-items:center;color:var(--muted);font-size:.8rem;text-align:center;padding:6px}
+.job.wide .pic{aspect-ratio:3/2}
+.job b{font-size:.85rem;overflow-wrap:anywhere}
+.job>*{min-width:0}
+.pill{display:inline-block;border-radius:99px;padding:1px 8px;font-size:.75rem;font-weight:700;background:var(--line);color:var(--muted)}
+.pill.run{background:var(--orange-soft);color:var(--orange)} .pill.ok{background:var(--ok-soft);color:var(--ok)} .pill.err{background:var(--bad-soft);color:var(--bad)}
+.err{font-size:.78rem;color:var(--bad);overflow-wrap:anywhere}
+ol{margin:0;padding-left:1.3em;display:grid;gap:6px}
+.filebtn{position:relative;overflow:hidden;display:inline-flex;align-items:center}.filebtn input{position:absolute;inset:0;opacity:0;cursor:pointer;min-height:0;padding:0}
+[hidden]{display:none!important}
+:focus-visible{outline:3px solid var(--orange);outline-offset:2px}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+<main>
+  <section class="card">
+    <h1>KDP<b>·</b>Studio · Disegnatore</h1>
+    <p class="lead" id="bookLine"></p>
+    <ol>
+      <li id="stepOrder" hidden>Apri il Disegnatore dal pulsante dell'ufficio di KDP Studio: l'ordine arriva da solo.</li>
+      <li>La prima volta scegli il servizio e incolla la tua chiave API: OpenAI (da <a href="https://platform.openai.com/api-keys" target="_blank" rel="noopener">platform.openai.com/api-keys</a>) oppure Gemini (da <a href="https://aistudio.google.com/apikey" target="_blank" rel="noopener">aistudio.google.com/apikey</a>). Resta salvata solo su questo dispositivo.</li>
+      <li>I disegni partono da soli (oppure premi <b>Disegna tutto</b>). Lascia la pagina aperta: lo schermo resta acceso da solo.</li>
+      <li>Alla fine il pacchetto si scarica da solo: torna a KDP Studio e premi <b>Carica i disegni</b>.</li>
+    </ol>
+  </section>
+  <section class="card" id="loadCard" hidden>
+    <h2>Ordine dei disegni</h2>
+    <span class="btn accent filebtn" style="justify-self:start">Oppure carica il file d'ordine<input id="orderFile" type="file" accept=".json,application/json" aria-label="Carica il file d'ordine"></span>
+    <div id="loadMsg"></div>
+  </section>
+  <section class="card" id="workCard">
+    <div class="grid2">
+      <label for="provider">Servizio per i disegni<select id="provider">
+        <option value="openai">OpenAI (ChatGPT)</option>
+        <option value="gemini">Gemini (Google)</option>
+      </select></label>
+      <label for="key"><span id="keyLabel">Chiave API di OpenAI</span><input id="key" type="password" autocomplete="off" placeholder="sk-…"></label>
+      <label for="model">Modello per le immagini<select id="model"></select></label>
+      <label for="quality" id="qualityWrap">Qualità<select id="quality">
+        <option value="medium">Media (consigliata)</option>
+        <option value="high">Alta (costa di più)</option>
+        <option value="low">Bassa (prove veloci)</option>
+      </select></label>
+    </div>
+    <label for="customModel" id="customWrap" hidden>Nome esatto del modello<input id="customModel" type="text" placeholder="gemini-…-image"></label>
+    <p class="lead" id="costLine"></p>
+    <div class="row">
+      <button class="btn primary" id="goAll" type="button">Disegna tutto</button>
+      <button class="btn" id="stop" type="button" disabled>Ferma</button>
+      <button class="btn accent" id="dl" type="button" disabled>Scarica il pacchetto disegni</button>
+    </div>
+    <div class="bar" aria-hidden="true"><i id="bar"></i></div>
+    <p class="lead" id="status">Pronto.</p>
+    <div id="msg"></div>
+  </section>
+  <section class="card" id="jobsCard">
+    <h2>Lavori</h2>
+    <div class="jobs" id="jobs"></div>
+  </section>
+</main>
+<script type="application/json" id="order">__ORDER__</script>
+<script>
+"use strict";
+const $ = s => document.querySelector(s);
+const RAW_ORDER = document.getElementById("order").textContent.trim();
+const EMBEDDED = RAW_ORDER !== "__" + "ORDER__";
+let ORDER = EMBEDDED ? JSON.parse(RAW_ORDER) : {title:"", jobs:[], refImages:{}};
+const esc = s => String(s == null ? "" : s).replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const norm = s => String(s||"").toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g,"").trim();
+const sleep = ms => new Promise(r => setTimeout(r, ms));
+let res = {}; // jobId -> {st, url, err}
+let stopFlag = false, running = false, noSize = false;
+const PRICE = {gemini:{low:0.07, medium:0.07, high:0.07}, openai:{low:0.01, medium:0.05, high:0.17}};
+function priceEach(){ const p = PRICE[provider()] || PRICE.gemini; return p[quality()] || p.medium; }
+function updateCost(){ if (!ORDER.jobs.length) return; $("#costLine").textContent = `Costo stimato: circa ${(ORDER.jobs.length * priceEach() + 0.1).toFixed(2).replace(".", ",")} $ (indicativo; dipende dal modello, dalla qualità e dai rifacimenti).`; }
+
+/* --- salvataggio dei disegni sul dispositivo: se il telefono ricarica la pagina, non si perde niente --- */
+const DB = (() => { let p = null; function open(){ if (!p) p = new Promise((ok, ko) => { try { const r = indexedDB.open("kdp-disegnatore", 1); r.onupgradeneeded = () => r.result.createObjectStore("kv"); r.onsuccess = () => ok(r.result); r.onerror = () => ko(r.error); } catch(e){ ko(e); } }); return p; }
+  async function tx(mode, fn){ const db = await open(); return new Promise((ok, ko) => { const t = db.transaction("kv", mode); const s = t.objectStore("kv"); const r = fn(s); t.oncomplete = () => ok(r && r.result); t.onerror = () => ko(t.error); }); }
+  return { get: k => tx("readonly", s => s.get(k)).catch(() => null), set: (k, v) => tx("readwrite", s => s.put(v, k)).catch(() => null) }; })();
+function orderKey(){ return `ord:${ORDER.bookId || ORDER.title}:${ORDER.round || 0}`; }
+function saveProgress(){ const keep = {}; for (const [id, r] of Object.entries(res)) if (r.st === "ok") keep[id] = {st:"ok", url:r.url}; DB.set(orderKey(), keep); }
+
+async function startOrder(o){
+  ORDER = o; res = {};
+  const saved = await DB.get(orderKey());
+  if (saved) for (const j of ORDER.jobs) if (saved[j.id]) res[j.id] = saved[j.id];
+  const ready = Object.keys(res).length;
+  $("#bookLine").textContent = `Libro: «${ORDER.title}» · ${ORDER.jobs.length} disegni da fare${ORDER.round ? " (rifacimenti)" : ""}.`;
+  updateCost();
+  $("#workCard").hidden = false; $("#jobsCard").hidden = false;
+  setMsg(ready ? `Ho ritrovato ${ready} disegni già fatti per questo ordine: «Disegna tutto» continua da quelli mancanti.` : "", "info");
+  setStatus(ready ? `${ready} di ${ORDER.jobs.length} disegni pronti.` : "Pronto.");
+  renderJobs();
+}
+async function orderFromHash(){
+  const h = location.hash; const m = /^#([or])=(.+)$/.exec(h); if (!m) return null;
+  try {
+    const b64 = m[2].replace(/-/g, "+").replace(/_/g, "/"); const bin = atob(b64); const bytes = new Uint8Array(bin.length);
+    for (let k = 0; k < bin.length; k++) bytes[k] = bin.charCodeAt(k);
+    let txt;
+    if (m[1] === "o") { const st = new Blob([bytes]).stream().pipeThrough(new DecompressionStream("gzip")); txt = await new Response(st).text(); }
+    else txt = new TextDecoder().decode(bytes);
+    const o = JSON.parse(txt); return o && o.kind === "kdp-ordine" && Array.isArray(o.jobs) ? o : null;
+  } catch(e){ return null; }
+}
+if (!EMBEDDED) {
+  $("#loadCard").hidden = false; $("#stepOrder").hidden = false; $("#workCard").hidden = true; $("#jobsCard").hidden = true;
+  $("#bookLine").textContent = "Nessun ordine caricato.";
+  $("#orderFile").addEventListener("change", async ev => {
+    const f = ev.target.files[0]; ev.target.value = ""; if (!f) return;
+    if (running) { $("#loadMsg").innerHTML = `<div class="note bad">Aspetta che finiscano i disegni in corso.</div>`; return; }
+    let o; try { o = JSON.parse(await f.text()); } catch(e){ o = null; }
+    if (!o || o.kind !== "kdp-ordine" || !Array.isArray(o.jobs)) { $("#loadMsg").innerHTML = `<div class="note bad">Questo non è un file d'ordine di KDP Studio. Nell'ufficio premi «Scarica l'ordine dei disegni» e carica quel file.</div>`; return; }
+    if (!o.jobs.length) { $("#loadMsg").innerHTML = `<div class="note info">In questo ordine non c'è niente da disegnare.</div>`; return; }
+    $("#loadMsg").innerHTML = `<div class="note ok">Ordine caricato: «${esc(o.title)}».</div>`;
+    await startOrder(o);
+  });
+}
+
+/* --- schermo acceso mentre disegna (telefono) --- */
+let wakeLock = null;
+async function keepAwake(on){
+  try { if (on && "wakeLock" in navigator && !wakeLock) { wakeLock = await navigator.wakeLock.request("screen"); wakeLock.addEventListener("release", () => { wakeLock = null; }); }
+        else if (!on && wakeLock) { await wakeLock.release(); wakeLock = null; } } catch(e){}
+}
+document.addEventListener("visibilitychange", () => { if (running && document.visibilityState === "visible") keepAwake(true); });
+const MODELS = {
+  openai: [["gpt-image-2.5-flare","GPT Image 2.5 Flare (consigliato)"],["gpt-image-2.5-sunburst","GPT Image 2.5 Sunburst (più preciso con i personaggi)"],["gpt-image-2.6-flare","GPT Image 2.6 Flare"],["gpt-image-2","GPT Image 2"]],
+  gemini: [["gemini-3.1-flash-image","Gemini 3.1 Flash Image (consigliato)"],["gemini-nano-banana-2.1","Nano Banana 2.1"],["gemini-3.1-flash-lite-image","Gemini 3.1 Flash Lite Image (più economico)"]]
+};
+const KEYINFO = {openai:{label:"Chiave API di OpenAI", ph:"sk-…"}, gemini:{label:"Chiave API di Gemini", ph:"AIza…"}};
+const ls = {get(k){ try { return localStorage.getItem(k) || ""; } catch(e){ return ""; } }, set(k, v){ try { localStorage.setItem(k, v); } catch(e){} }};
+function provider(){ return $("#provider").value; }
+function quality(){ return $("#quality").value; }
+function fillModels(){
+  const pv = provider(); const saved = ls.get("kdp-" + pv + "-model");
+  $("#model").innerHTML = MODELS[pv].map(([v, l]) => `<option value="${v}">${esc(l)}</option>`).join("") + `<option value="custom">Altro modello…</option>`;
+  if (saved) { if (MODELS[pv].some(m => m[0] === saved)) $("#model").value = saved; else { $("#model").value = "custom"; $("#customModel").value = saved; } }
+  else $("#customModel").value = "";
+  $("#keyLabel").textContent = KEYINFO[pv].label; $("#key").placeholder = KEYINFO[pv].ph; $("#key").value = ls.get("kdp-" + pv + "-key");
+  $("#customModel").placeholder = pv === "openai" ? "gpt-image-…" : "gemini-…-image";
+  $("#qualityWrap").hidden = pv !== "openai";
+  syncCustom(); updateCost();
+}
+function syncCustom(){ $("#customWrap").hidden = $("#model").value !== "custom"; }
+function modelId(){ return $("#model").value === "custom" ? $("#customModel").value.trim() : $("#model").value; }
+function remember(){ const pv = provider(); ls.set("kdp-provider", pv); ls.set("kdp-" + pv + "-key", $("#key").value.trim()); ls.set("kdp-" + pv + "-model", modelId()); ls.set("kdp-quality", quality()); }
+$("#provider").value = ls.get("kdp-provider") || "openai";
+if (ls.get("kdp-quality")) $("#quality").value = ls.get("kdp-quality");
+fillModels();
+$("#provider").addEventListener("change", () => { ls.set("kdp-provider", provider()); fillModels(); });
+$("#model").addEventListener("change", syncCustom);
+$("#quality").addEventListener("change", () => { ls.set("kdp-quality", quality()); updateCost(); });
+$("#key").addEventListener("change", () => ls.set("kdp-" + provider() + "-key", $("#key").value.trim()));
+
+function renderJobs(){
+  $("#jobs").innerHTML = ORDER.jobs.map(j => {
+    const r = res[j.id] || {st:"todo"};
+    const pill = {todo:["da fare",""], run:["in corso…","run"], ok:["fatto","ok"], err:["errore","err"]}[r.st];
+    return `<article class="job ${j.ratio === "3:2" ? "wide" : ""}">
+      <div class="pic" style="${r.url ? `background-image:url('${r.url}');border-style:solid` : ""}">${r.url ? "" : esc(j.kind === "sheet" ? "Scheda personaggio" : j.kind === "cover" ? "Copertina a colori" : "Pagina " + j.num)}</div>
+      <b>${esc(j.label)}</b>
+      <div class="row"><span class="pill ${pill[1]}">${pill[0]}</span>${r.st !== "run" ? `<button class="btn small" type="button" data-redo="${esc(j.id)}" ${running ? "disabled" : ""}>${r.url ? "Rifai" : "Disegna"}</button>` : ""}</div>
+      ${r.err ? `<div class="err">${esc(r.err)}</div>` : ""}
+    </article>`;
+  }).join("");
+  const done = ORDER.jobs.filter(j => res[j.id] && res[j.id].st === "ok").length;
+  $("#bar").style.width = (ORDER.jobs.length ? Math.round(done / ORDER.jobs.length * 100) : 0) + "%";
+  $("#dl").disabled = running || !done;
+}
+function setMsg(html, cls){ $("#msg").innerHTML = html ? `<div class="note ${cls||"info"}">${html}</div>` : ""; }
+
+function refsFor(job){
+  const out = [];
+  for (const name of job.refs || []) {
+    const sheetJob = "sheet:" + name;
+    const r = res[sheetJob];
+    let url = r && r.url;
+    if (!url) { const k = Object.keys(ORDER.refImages || {}).find(n => norm(n) === norm(name)); if (k) url = ORDER.refImages[k]; }
+    if (url) out.push(url);
+  }
+  return out;
+}
+function dataUrlParts(u){ const m = /^data:([^;]+);base64,(.*)$/.exec(u); return m ? {mime:m[1], b64:m[2]} : null; }
+
+async function callGemini(job){
+  const key = $("#key").value.trim(); const model = modelId();
+  if (!key) throw new Error("Manca la chiave API di Gemini.");
+  if (!model) throw new Error("Manca il nome del modello.");
+  const parts = [];
+  for (const u of refsFor(job)) { const p = dataUrlParts(u); if (p) parts.push({inlineData:{mimeType:p.mime, data:p.b64}}); }
+  const refNote = parts.length ? "Le immagini allegate sono le schede di riferimento dei personaggi: disegnali identici.\n" : "";
+  parts.push({text: refNote + job.prompt});
+  const cfg = {responseModalities:["IMAGE"], imageConfig:{aspectRatio: job.ratio || "3:4"}};
+  if (!noSize) cfg.imageConfig.imageSize = job.size || "2K";
+  for (let attempt = 0; attempt < 4; attempt++) {
+    let r;
+    try {
+      r = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(model)}:generateContent`, {
+        method:"POST", headers:{"Content-Type":"application/json", "x-goog-api-key": key},
+        body: JSON.stringify({contents:[{role:"user", parts}], generationConfig: cfg})
+      });
+    } catch(e) {
+      throw new Error("Il browser non riesce a raggiungere Gemini. Controlla la connessione internet e riprova.");
+    }
+    const body = await r.json().catch(() => ({}));
+    if (r.ok) {
+      const cand = (body.candidates || [])[0];
+      const ps = (cand && cand.content && cand.content.parts) || [];
+      const img = ps.map(p => p.inlineData || p.inline_data).find(Boolean);
+      if (img) return {mime: img.mimeType || img.mime_type || "image/png", b64: img.data};
+      const txt = ps.map(p => p.text).filter(Boolean).join(" ");
+      const why = (cand && cand.finishReason) || (body.promptFeedback && body.promptFeedback.blockReason) || "";
+      throw new Error("Gemini non ha restituito un'immagine" + (why ? ` (${why})` : "") + (txt ? ": " + txt.slice(0, 160) : "."));
+    }
+    const m = (body.error && body.error.message) || `errore ${r.status}`;
+    if (r.status === 400 && /image_?size/i.test(m) && !noSize) { noSize = true; delete cfg.imageConfig.imageSize; continue; }
+    if (r.status === 400 && /api key/i.test(m)) throw new Error("La chiave API non è valida. Controllala su aistudio.google.com/apikey.");
+    if (r.status === 403) throw new Error("La chiave non ha accesso a questo modello o la fatturazione non è attiva. " + m.slice(0, 140));
+    if (r.status === 404) throw new Error("Modello non trovato: scegline un altro nell'elenco. " + m.slice(0, 120));
+    if (r.status === 429 || r.status >= 500) { if (attempt < 3) { setStatus(`Gemini è occupato, riprovo tra ${20*(attempt+1)} secondi…`); await sleep(20000*(attempt+1)); continue; } }
+    throw new Error(m.slice(0, 220));
+  }
+  throw new Error("Gemini non risponde: riprova più tardi.");
+}
+function dataUrlToBlob(u){ const p = dataUrlParts(u); const bin = atob(p.b64); const a = new Uint8Array(bin.length); for (let k = 0; k < bin.length; k++) a[k] = bin.charCodeAt(k); return new Blob([a], {type: p.mime}); }
+const dropped = new Set(); // parametri che il modello non accetta
+async function callOpenAI(job){
+  const key = $("#key").value.trim(); const model = modelId();
+  if (!key) throw new Error("Manca la chiave API di OpenAI.");
+  if (!model) throw new Error("Manca il nome del modello.");
+  const refs = refsFor(job);
+  const refNote = refs.length ? "Le immagini allegate sono le schede di riferimento dei personaggi: disegnali identici (stessi capelli, vestiti e proporzioni). Non copiare la composizione delle schede.\n" : "";
+  const prompt = refNote + job.prompt;
+  const size = job.ratio === "3:2" ? "1536x1024" : "1024x1536";
+  for (let attempt = 0; attempt < 5; attempt++) {
+    const params = {model, prompt, size, n:1};
+    if (!dropped.has("quality")) params.quality = job.kind === "cover" && quality() !== "low" ? "high" : quality();
+    if (refs.length && !dropped.has("input_fidelity")) params.input_fidelity = "high";
+    let r;
+    try {
+      if (refs.length) {
+        const fd = new FormData();
+        for (const [k, v] of Object.entries(params)) fd.append(k, String(v));
+        refs.forEach((u, k) => fd.append("image[]", dataUrlToBlob(u), `scheda_${k+1}.jpg`));
+        r = await fetch("https://api.openai.com/v1/images/edits", {method:"POST", headers:{"Authorization": "Bearer " + key}, body: fd});
+      } else {
+        r = await fetch("https://api.openai.com/v1/images/generations", {method:"POST", headers:{"Authorization": "Bearer " + key, "Content-Type":"application/json"}, body: JSON.stringify(params)});
+      }
+    } catch(e) {
+      throw new Error("Il browser non riesce a raggiungere OpenAI. Controlla la connessione internet e riprova.");
+    }
+    const body = await r.json().catch(() => ({}));
+    if (r.ok) {
+      const d = (body.data || [])[0];
+      if (d && d.b64_json) return {mime: "image/png", b64: d.b64_json};
+      throw new Error("OpenAI non ha restituito un'immagine.");
+    }
+    const err = body.error || {}; const m = err.message || `errore ${r.status}`; const code = err.code || ""; const prm = err.param || "";
+    if (r.status === 400 && (prm === "quality" || /quality/i.test(m)) && !dropped.has("quality")) { dropped.add("quality"); continue; }
+    if (r.status === 400 && (prm === "input_fidelity" || /input_fidelity/i.test(m)) && !dropped.has("input_fidelity")) { dropped.add("input_fidelity"); continue; }
+    if (r.status === 401) throw new Error("La chiave API non è valida. Controllala su platform.openai.com/api-keys.");
+    if (r.status === 403 && /verif/i.test(m)) throw new Error("Per usare questo modello OpenAI chiede di verificare l'organizzazione: vai su platform.openai.com → Settings → Organization → General → Verify. " + m.slice(0, 120));
+    if (r.status === 403) throw new Error("La chiave non ha accesso a questo modello. " + m.slice(0, 160));
+    if (r.status === 404 || code === "model_not_found") throw new Error("Modello non trovato: scegline un altro nell'elenco. " + m.slice(0, 120));
+    if (code === "insufficient_quota" || /billing|quota/i.test(m) && r.status === 429) throw new Error("Credito OpenAI finito o non attivo: ricarica su platform.openai.com → Billing.");
+    if (code === "moderation_blocked" || /safety|moderation/i.test(m)) throw new Error("OpenAI ha rifiutato questo disegno per le sue regole sui contenuti. Premi «Rifai»; se si ripete, cambia la scena dall'ufficio. " + m.slice(0, 100));
+    if (r.status === 429 || r.status >= 500) { if (attempt < 4) { setStatus(`OpenAI è occupato, riprovo tra ${20*(attempt+1)} secondi…`); await sleep(20000*(attempt+1)); continue; } }
+    throw new Error(m.slice(0, 220));
+  }
+  throw new Error("OpenAI non risponde: riprova più tardi.");
+}
+function callAI(job){ return provider() === "openai" ? callOpenAI(job) : callGemini(job); }
+function toJpeg(img, scale = 1){
+  return new Promise((resolve, reject) => {
+    const im = new Image();
+    im.onload = () => { const c = document.createElement("canvas"); c.width = Math.round(im.naturalWidth * scale); c.height = Math.round(im.naturalHeight * scale); const x = c.getContext("2d"); x.imageSmoothingEnabled = true; x.imageSmoothingQuality = "high"; x.fillStyle = "#fff"; x.fillRect(0,0,c.width,c.height); x.drawImage(im, 0, 0, c.width, c.height); resolve(c.toDataURL("image/jpeg", 0.92)); };
+    im.onerror = () => reject(new Error("Immagine non leggibile"));
+    im.src = `data:${img.mime};base64,${img.b64}`;
+  });
+}
+function setStatus(t){ $("#status").textContent = t; }
+
+async function runJob(job){
+  res[job.id] = {st:"run"}; renderJobs();
+  try { const img = await callAI(job); const url = await toJpeg(img, provider() === "openai" && job.kind === "cover" ? 2 : 1); res[job.id] = {st:"ok", url}; saveProgress(); }
+  catch(e){ res[job.id] = {st:"err", err: e.message || String(e)}; }
+  renderJobs();
+  return res[job.id].st === "ok";
+}
+async function runList(list, conc){
+  let i = 0, fails = 0;
+  async function worker(){ while (i < list.length && !stopFlag) { const j = list[i++]; setStatus(`Disegno: ${j.label}…`); const ok = await runJob(j); if (!ok) fails++; const e = res[j.id].err || ""; if (/chiave|fatturazione|Modello non trovato|raggiungere|Credito OpenAI|verificare/i.test(e)) { stopFlag = true; setMsg(esc(e), "bad"); } } }
+  await Promise.all(Array.from({length: conc}, worker));
+  return fails;
+}
+async function runAll(only){
+  if (running || !ORDER.jobs.length) return; remember(); keepAwake(true); running = true; stopFlag = false; setMsg(""); $("#goAll").disabled = true; $("#stop").disabled = false; renderJobs();
+  const todo = only ? ORDER.jobs.filter(j => j.id === only) : ORDER.jobs.filter(j => !(res[j.id] && res[j.id].st === "ok"));
+  const sheets = todo.filter(j => j.kind === "sheet"), rest = todo.filter(j => j.kind !== "sheet");
+  let fails = 0;
+  if (sheets.length) fails += await runList(sheets, 2);
+  if (!stopFlag && rest.length) fails += await runList(rest, 2);
+  running = false; keepAwake(false); $("#goAll").disabled = false; $("#stop").disabled = true; renderJobs();
+  const done = ORDER.jobs.filter(j => res[j.id] && res[j.id].st === "ok").length;
+  if (stopFlag && !$("#msg").innerHTML) setMsg("Fermato. Premi «Disegna tutto» per continuare da dove eri rimasto.", "info");
+  else if (!stopFlag) {
+    if (!fails && !only && done === ORDER.jobs.length) { download(); }
+    else setMsg(fails ? `${fails} disegni non sono riusciti: premi «Disegna» sotto ciascuno per riprovare, oppure scarica comunque il pacchetto.` : "Tutto pronto: ora premi «Scarica il pacchetto disegni».", fails ? "bad" : "ok");
+  }
+  setStatus(`${done} di ${ORDER.jobs.length} disegni pronti.`);
+}
+function download(){
+  const images = {}; ORDER.jobs.forEach(j => { const r = res[j.id]; if (r && r.url) images[j.id] = r.url; });
+  const blob = new Blob([JSON.stringify({kind:"kdp-disegni", version:1, bookId: ORDER.bookId, title: ORDER.title, round: ORDER.round || 0, images})], {type:"application/json"});
+  const a = document.createElement("a"); a.href = URL.createObjectURL(blob);
+  a.download = `Disegni_${ORDER.fileName}${ORDER.round ? "_rifacimenti" + ORDER.round : ""}.json`;
+  document.body.appendChild(a); a.click(); setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 4000);
+  setMsg("<b>Pacchetto disegni scaricato.</b> Torna alla scheda di KDP Studio e premi «Carica i disegni». Se il file non si è scaricato, premi «Scarica il pacchetto disegni».", "ok");
+}
+$("#goAll").addEventListener("click", () => runAll());
+$("#stop").addEventListener("click", () => { stopFlag = true; setStatus("Mi fermo dopo i disegni in corso…"); });
+$("#dl").addEventListener("click", download);
+$("#jobs").addEventListener("click", ev => { const b = ev.target.closest("[data-redo]"); if (b) runAll(b.dataset.redo); });
+window.addEventListener("beforeunload", ev => { if (running) { ev.preventDefault(); ev.returnValue = ""; } });
+if (EMBEDDED) startOrder(ORDER);
+else {
+  window.addEventListener("hashchange", () => { if (/^#[or]=/.test(location.hash) && !running) location.reload(); });
+  renderJobs();
+  orderFromHash().then(async o => {
+    if (!o) { if (location.hash) $("#loadMsg").innerHTML = `<div class="note bad">Il link dell'ordine non è completo. Torna a KDP Studio e premi di nuovo «Apri il Disegnatore».</div>`; return; }
+    $("#loadMsg").innerHTML = `<div class="note ok">Ordine arrivato da KDP Studio: «${esc(o.title)}».</div>`;
+    await startOrder(o);
+    const missing = ORDER.jobs.filter(j => !(res[j.id] && res[j.id].st === "ok")).length;
+    if (!missing) { setMsg("Questi disegni sono già pronti: premi «Scarica il pacchetto disegni» e caricalo in KDP Studio.", "ok"); return; }
+    if ($("#key").value.trim()) { setMsg("Parto da solo: lascia questa pagina aperta. A fine lavoro il pacchetto si scarica da solo.", "info"); setTimeout(() => runAll(), 800); }
+    else setMsg("Incolla la tua chiave API qui sopra e premi «Disegna tutto».", "info");
+  });
+}
+</script>
+</body>
+</html>
